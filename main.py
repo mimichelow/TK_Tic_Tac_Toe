@@ -1,6 +1,7 @@
 import tkinter.messagebox
 from tkinter import *
 import random
+from functools import partial
 
 # ----------------------------------------------Set up UI
 window = Tk()
@@ -21,92 +22,16 @@ title.grid(row=1)
 canvas.create_image(160, 160, image=board_img)
 canvas.grid(row=2)
 
-board = []
+board = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 boardbutton = []
 
-for x in range(9):
-    board.append(0)
 
-
-# ---------------------------------Sets up functions for each button
-def fun1():
-    if board[0] != 0:
+def play(slot):
+    if board[slot] != 0:
         tkinter.messagebox.showerror(title="Error", message="This spot is already taken.")
     else:
-        boardbutton[0].configure(image=X_SLOT)
-        board[0] = 1
-        AIPlay()
-
-
-def fun2():
-    if board[1] != 0:
-        tkinter.messagebox.showerror(title="Error", message="This spot is already taken.")
-    else:
-        boardbutton[1].configure(image=X_SLOT)
-        board[1] = 1
-        AIPlay()
-
-
-def fun3():
-    if board[2] != 0:
-        tkinter.messagebox.showerror(title="Error", message="This spot is already taken.")
-    else:
-        boardbutton[2].configure(image=X_SLOT)
-        board[2] = 1
-        AIPlay()
-
-
-def fun4():
-    if board[3] != 0:
-        tkinter.messagebox.showerror(title="Error", message="This spot is already taken.")
-    else:
-        boardbutton[3].configure(image=X_SLOT)
-        board[3] = 1
-        AIPlay()
-
-
-def fun5():
-    if board[4] != 0:
-        tkinter.messagebox.showerror(title="Error", message="This spot is already taken.")
-    else:
-        boardbutton[4].configure(image=X_SLOT)
-        board[4] = 1
-        AIPlay()
-
-
-def fun6():
-    if board[5] != 0:
-        tkinter.messagebox.showerror(title="Error", message="This spot is already taken.")
-    else:
-        boardbutton[5].configure(image=X_SLOT)
-        board[5] = 1
-        AIPlay()
-
-
-def fun7():
-    if board[6] != 0:
-        tkinter.messagebox.showerror(title="Error", message="This spot is already taken.")
-    else:
-        boardbutton[6].configure(image=X_SLOT)
-        board[6] = 1
-        AIPlay()
-
-
-def fun8():
-    if board[7] != 0:
-        tkinter.messagebox.showerror(title="Error", message="This spot is already taken.")
-    else:
-        boardbutton[7].configure(image=X_SLOT)
-        board[7] = 1
-        AIPlay()
-
-
-def fun9():
-    if board[8] != 0:
-        tkinter.messagebox.showerror(title="Error", message="This spot is already taken.")
-    else:
-        boardbutton[8].configure(image=X_SLOT)
-        board[8] = 1
+        boardbutton[slot].configure(image=X_SLOT)
+        board[slot] = 1
         AIPlay()
 
 
@@ -122,7 +47,7 @@ def playerwin():
 
 # Checks if a certain move would win
 def wouldwin(pos):
-    if sum(board[pos % 3:9:3]) == -2 or sum(board[int(pos / 3)*3:int(pos / 3)*3 + 3]) == -2:
+    if sum(board[pos % 3:9:3]) == -2 or sum(board[int(pos / 3) * 3:int(pos / 3) * 3 + 3]) == -2:
         return True
     elif pos in [0, 4, 8] and sum([slot for slot in board[0:8:4]]) == -2:
         return True
@@ -134,7 +59,7 @@ def wouldwin(pos):
 
 # Checks if a certain move would lose
 def wouldlose(pos):
-    if sum(board[pos % 3:9:3]) == 2 or sum(board[int(pos / 3)*3:int(pos / 3)*3 + 3]) == 2:
+    if sum(board[pos % 3:9:3]) == 2 or sum(board[int(pos / 3) * 3:int(pos / 3) * 3 + 3]) == 2:
         return True
     elif pos in [0, 4, 8] and sum([slot for slot in board[0:8:4]]) == 2:
         return True
@@ -161,7 +86,6 @@ def gameblock():
 # Checks if player wins, or moves for the CPU, first to win, then to block a win, then randomly
 def AIPlay():
     if playerwin():
-        print("playerwon")
         if tkinter.messagebox.askyesno(title="Game over", message="You win! Good Job! Do you wish to play again?"):
             gamerestart()
         else:
@@ -173,7 +97,8 @@ def AIPlay():
             if wouldwin(slot):
                 board[slot] = -1
                 boardbutton[slot].configure(image=O_SLOT)
-                if tkinter.messagebox.askyesno(title="Game over", message="I Win! You Lose! Do you wish to play again?"):
+                if tkinter.messagebox.askyesno(title="Game over",
+                                               message="I Win! You Lose! Do you wish to play again?"):
                     gamerestart()
                 else:
                     gameblock()
@@ -194,15 +119,13 @@ def AIPlay():
         boardbutton[emptyspaces].configure(image=O_SLOT)
 
 
-function = [fun1, fun2, fun3, fun4, fun5, fun6, fun7, fun8, fun9]
-temp = 0
-
+action_with_arg = None
 for xtemp in (5, 115, 225):
     for ytemp in (5, 115, 225):
+        action_with_arg = partial(play, len(boardbutton))
         boardbutton.append(
-            Button(canvas, image=EMPTY_SLOT, command=function[temp], highlightthickness=0, borderwidth=0))
-        boardbutton[temp].place(x=ytemp, y=xtemp)
-        temp += 1
+            Button(canvas, image=EMPTY_SLOT, command=action_with_arg, highlightthickness=0, borderwidth=0))
+        boardbutton[len(boardbutton) - 1].place(x=ytemp, y=xtemp)
 
 quitbutton = Button(text="Exit", command=window.destroy)
 
